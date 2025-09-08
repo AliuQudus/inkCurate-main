@@ -1,15 +1,14 @@
-from fastapi import Depends, FastAPI
-from sqlalchemy.orm import Session
-from passlib.context import CryptContext
+from fastapi import FastAPI
 from . import models
-from .database import engine, get_db
-from .routers import user
+from .database import engine
+from .routers import user, auth
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 app.include_router(user.router)
+app.include_router(auth.router)
 
 
 @app.get("/")
