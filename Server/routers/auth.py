@@ -7,7 +7,7 @@ from ..database import get_db
 
 router = APIRouter(tags=["Authentication"])
 
-@router.post("/login")
+@router.post("login")
 def login (user_details: Schemas.UserLogin, db: Session = Depends(get_db)):
 
   user = (db.query(models.Login).filter(models.Login.email == user_details.email).first())
