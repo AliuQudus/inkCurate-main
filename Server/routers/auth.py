@@ -1,7 +1,6 @@
-from fastapi import Depends, APIRouter, Body, HTTPException, status, Path
+from fastapi import Depends, APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
-
-from .. import Schemas, models, utils
+from .. import Schemas, models, utils, Oauth
 from ..database import get_db
 
 router = APIRouter(tags=["Authentication"])
@@ -19,9 +18,8 @@ def login (user_details: Schemas.UserLogin, db: Session = Depends(get_db)):
             status_code=status.HTTP_403_FORBIDDEN, detail=f"Invalid Credentials"
         )
 
-  # access_token = Oauth.AccessToken(data={"username": user.username})
-  # return {"access_token": access_token, "token_type": "bearer"}
-  return{"Message":"Successfully logged In"}
+  access_token = Oauth.AccessToken(data={"username": user.username})
+  return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/logout")
 def logout(current_user: Schemas.TokenData = Depends(Oauth.getCurrentUser)):
