@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
+from typing import Optional
 
 
 class User(BaseModel):
@@ -7,6 +8,17 @@ class User(BaseModel):
   username: str
   email: EmailStr
   password: str
+class UpdateUser(BaseModel):
+  Name: Optional[str] = None
+  username: Optional[str] = None
+  password: Optional[str] = None
+
+  model_config = {"from_attributes": True}
+
+class UpdateOutput(BaseModel):
+  Name: str
+  username: str
+  email: EmailStr
 
 class UserOutput(BaseModel):
   Name: str
@@ -26,3 +38,8 @@ class UserResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
