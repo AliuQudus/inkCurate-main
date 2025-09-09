@@ -15,12 +15,37 @@ Token_Expiration = Settings.TOKEN_EXPIRATION
 
 
 def AccessToken(data: dict):
-  encode = data.copy()
+    encode = data.copy()
 
-  expiration = datetime.now(timezone.utc) + timedelta(minutes=Token_Expiration)
+    expiration = datetime.now(timezone.utc) + timedelta(minutes=Token_Expiration)
 
-  encode.update({"exp": int(expiration.timestamp())})
+    encode.update({"exp": int(expiration.timestamp())})
 
-  encoded_jwt = jwt.encode(encode, Secret_key, algorithm=ALgorithm)
+    encoded_jwt = jwt.encode(encode, Secret_key, algorithm=ALgorithm)
 
-  return encoded_jwt
+    return encoded_jwt
+
+
+def VerifyToken(token:str, credentials_exception):
+    try:
+        payload = jwt.decode(token, Secret_key, algorithms=ALgorithm)
+
+        username: str = payload.get("username")
+
+        if username == None:
+            raise credentials_exception
+        token_data = Schemas.TokenData(username=username)
+    except JWTError:
+        raise credentials_exception
+    
+    return token_data
+
+
+def getCurrentUser(token:str = Depends(oauth2)):
+    credentials_exceptions = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=f"Could not validate credentials",
+        headers={"WWW.Authenticate":"Bearer"}
+    )
+
+    return VerifyToken(token, credentials_exceptions)
