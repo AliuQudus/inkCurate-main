@@ -7,30 +7,46 @@ from ..database import get_db
 
 router = APIRouter(prefix="/books", tags=["Books"])
 
-def get_or_create_book(db: Session, google_book_id: str, title: str | None = None, authors: str | None = None, thumbnail: str | None = None):
-    book = db.query(models.Book).filter(models.Book.google_book_id == google_book_id).one_or_none()
+
+def get_or_create_book(
+    db: Session, 
+    google_book_id: str, 
+    title: str | None = None, 
+    authors: list[str] | None = None,  # Changed to list
+    thumbnail: str | None = None
+):
+    book = db.query(models.Book).filter(
+        models.Book.google_book_id == google_book_id
+    ).one_or_none()
+    
     if book:
         updated = False
         if title and book.title != title:
-            book.title = title; updated = True
+            book.title = title
+            updated = True
         if authors and book.authors != authors:
-            book.authors = authors; updated = True
+            book.authors = authors  # Store as JSON array
+            updated = True
         if thumbnail and book.thumbnail != thumbnail:
-            book.thumbnail = thumbnail; updated = True
+            book.thumbnail = thumbnail
+            updated = True
         if updated:
-            db.add(book); db.commit(); db.refresh(book)
+            db.add(book)
+            db.commit()
+            db.refresh(book)
         return book
 
     book = models.Book(
         google_book_id=google_book_id,
         title=title,
-        authors=authors,
+        authors=authors,  # Store as JSON array directly
         thumbnail=thumbnail
     )
     db.add(book)
     db.commit()
     db.refresh(book)
     return book
+
 
 @router.post("/vote", response_model=Schemas.BookVoteResponse)
 def vote_book(
@@ -74,6 +90,7 @@ def vote_book(
         vote_count=len(likes),
         users=users
     )
+
 
 @router.get("/{google_book_id}/votes", response_model=Schemas.BookVoteResponse)
 def get_book_votes(google_book_id: str = Path(...), db: Session = Depends(get_db)):
