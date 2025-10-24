@@ -49,7 +49,7 @@ class Like(Base):
     )
     '''
 
-from sqlalchemy import TIMESTAMP, Column, Integer, String, text, ForeignKey, UniqueConstraint
+from sqlalchemy import TIMESTAMP, Column, Integer, String, text, ForeignKey, UniqueConstraint, JSON
 from sqlalchemy.orm import relationship
 from .database import Base
 
