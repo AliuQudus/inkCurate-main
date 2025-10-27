@@ -12,7 +12,7 @@ def get_or_create_book(
     db: Session, 
     google_book_id: str, 
     title: str | None = None, 
-    authors: list[str] | None = None,  # Changed to list
+    authors: list[str] | None = None,  
     thumbnail: str | None = None
 ):
     book = db.query(models.Book).filter(
@@ -25,7 +25,7 @@ def get_or_create_book(
             book.title = title
             updated = True
         if authors and book.authors != authors:
-            book.authors = authors  # Store as JSON array
+            book.authors = authors  
             updated = True
         if thumbnail and book.thumbnail != thumbnail:
             book.thumbnail = thumbnail
@@ -39,7 +39,7 @@ def get_or_create_book(
     book = models.Book(
         google_book_id=google_book_id,
         title=title,
-        authors=authors,  # Store as JSON array directly
+        authors=authors,  
         thumbnail=thumbnail
     )
     db.add(book)
@@ -54,16 +54,11 @@ def vote_book(
     db: Session = Depends(get_db),
     current_user: Schemas.TokenData = Depends(Oauth.getCurrentUser),
 ):
-    """
-    Like or unlike a book. Uses the logged-in user (Oauth.getCurrentUser).
-    """
-
-    # find actual user record from DB
+    
     user_record = db.query(models.Login).filter(models.Login.username == current_user.username).one_or_none()
     if not user_record:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User record not found")
 
-    # ensure book exists (create if not)
     book = get_or_create_book(db, payload.google_book_id, payload.title, payload.authors, payload.thumbnail)
 
     if payload.action == "unlike":
@@ -77,11 +72,10 @@ def vote_book(
         try:
             db.commit()
         except IntegrityError:
-            db.rollback()  # already liked; ignore duplicate
+            db.rollback()  
 
-    # build response
     likes = db.query(models.Like).filter(models.Like.book_id == book.id).all()
-    users = [{"username": l.user.username, "name": l.user.Name} for l in likes]  # use Login.Name for display
+    users = [{"username": l.user.username, "name": l.user.Name} for l in likes]  
 
     return Schemas.BookVoteResponse(
         google_book_id=book.google_book_id,
@@ -111,7 +105,7 @@ def get_book_votes(google_book_id: str = Path(...), db: Session = Depends(get_db
 
 @router.get("/user/{username}/votes", response_model=list[Schemas.BookVoteResponse])
 def get_user_votes(username: str = Path(...), db: Session = Depends(get_db), current_user: Schemas.TokenData = Depends(Oauth.getCurrentUser)):
-    # optional: only allow user to view their own votes or allow admins
+
     if current_user.username != username:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed to view other user's votes")
 
