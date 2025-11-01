@@ -4,12 +4,11 @@ from sqlalchemy.orm import sessionmaker
 from psycopg2.extras import RealDictCursor
 import time
 import psycopg2
-#from .config import Settings
+from .config import Settings
 
+Sql_database = f"postgresql://{Settings.DATABASE_USERNAME}:{Settings.DATABASE_PASSWORD}@{Settings.DATABASE_HOST}:{Settings.DATABASE_PORT}/{Settings.DATABASE_NAME}"
 
-#Sql_database = "postgresql://{Settings.DATABASE_USERNAME}:{Settings.DATABASE_PASSWORD}@{Settings.DATABASE_HOST}:{Settings.DATABASE_PORT}/{Settings.DATABASE_NAME}"
-
-Sql_database = 'postgresql://postgres:quhduzski@localhost/InkCurate'
+# Sql_database = 'postgresql://postgres:quhduzski@localhost/InkCurate'
 
 engine = create_engine(Sql_database)
 
