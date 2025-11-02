@@ -1,4 +1,4 @@
-"""Added column to the post table
+"""Added column to the users table
 
 Revision ID: 86a92c8ac2f8
 Revises: 923956971ec3
