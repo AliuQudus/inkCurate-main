@@ -95,12 +95,14 @@ class GoogleBookDetail(GoogleBookSummary):
 from pydantic import BaseModel, EmailStr, ConfigDict
 from datetime import datetime
 from typing import Optional, List
+from uuid import UUID
 
 
 class User(BaseModel):
     Name: str
     username: str
     email: EmailStr
+    Phone_No: Optional[str] = None
     password: str
 
 
@@ -113,6 +115,7 @@ class UpdateUser(BaseModel):
 
 
 class UpdateOutput(BaseModel):
+    id:UUID
     Name: str
     username: str
     email: EmailStr
@@ -130,7 +133,7 @@ class UserLogin(BaseModel):
 
 
 class UserResponse(BaseModel):
-    id: int
+    id: UUID
     username: str
     email: EmailStr
     created_at: datetime
@@ -139,6 +142,7 @@ class UserResponse(BaseModel):
 
 
 class TokenData(BaseModel):
+    id: Optional[UUID] = None
     username: Optional[str] = None
     email: Optional[EmailStr] = None
 
@@ -165,6 +169,8 @@ class BookVoteAction(BaseModel):
     title: Optional[str] = None
     authors: Optional[List[str]] = None  # Changed to list
     thumbnail: Optional[str] = None
+    description: Optional[str] = None
+    published_date: Optional[str] = None
     action: Optional[str] = "like"  # "like" or "unlike"
 
 
