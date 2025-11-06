@@ -132,6 +132,8 @@ def get_liked_books(
             "title": book.title,
             "authors": authors_list,
             "thumbnail": book.thumbnail,
+            # "description": book.description,
+            # "published_date": book.publishedDate,
             "is_liked": True,
             "vote_count": vote_count,
         })
