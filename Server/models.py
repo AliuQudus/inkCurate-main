@@ -49,6 +49,8 @@ class Like(Base):
     )
     '''
 
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import TIMESTAMP, Column, Integer, String, text, ForeignKey, UniqueConstraint, JSON
 from sqlalchemy.orm import relationship
 from .database import Base
@@ -56,10 +58,11 @@ from .database import Base
 class Login(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, nullable=False, default=uuid.uuid4)
     Name = Column(String, nullable=False)
     username = Column(String, nullable=False, unique=True)
     email = Column(String, nullable=False, unique=True)
+    Phone_No = Column(String)
     password = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
 
@@ -87,7 +90,7 @@ class Like(Base):
     __tablename__ = "likes"
 
     id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     book_id = Column(Integer, ForeignKey("books.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
 
