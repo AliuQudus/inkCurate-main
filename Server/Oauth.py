@@ -59,6 +59,7 @@ from jose import JWTError, jwt
 from .import Schemas
 from fastapi.security import OAuth2PasswordBearer
 from .config import Settings
+from uuid import UUID
 
 oauth2 = OAuth2PasswordBearer(tokenUrl="/login")
 
@@ -70,6 +71,10 @@ Token_Expiration = Settings.TOKEN_EXPIRATION
 def create_access_token(data: dict) -> str:
     """Create JWT access token - renamed from AccessToken for consistency"""
     encode = data.copy()
+
+    # Convert UUID to string if present
+    if "user_id" in encode and isinstance(encode["user_id"], UUID):
+        encode["user_id"] = str(encode["user_id"])
     
     expiration = datetime.now(timezone.utc) + timedelta(minutes=Token_Expiration)
     encode.update({"exp": int(expiration.timestamp())})
@@ -92,11 +97,13 @@ def VerifyToken(token: str, credentials_exception):
         
         username: str = payload.get("username")
         email: str = payload.get("email")  # Added email support
+        userid: str= payload.get("user_id")
         
         if username is None:
             raise credentials_exception
-            
-        token_data = Schemas.TokenData(username=username, email=email)
+        
+        user_id = UUID(userid) if userid else None
+        token_data = Schemas.TokenData(username=username, email=email, id=user_id)
         
     except JWTError:
         raise credentials_exception
