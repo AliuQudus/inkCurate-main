@@ -2,6 +2,7 @@ from fastapi import Body, Depends, APIRouter, HTTPException, status, Path
 from .. import Schemas, models, utils, Oauth
 from ..database import get_db
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 
 router = APIRouter(prefix="/Reg", tags=["Registration"])
