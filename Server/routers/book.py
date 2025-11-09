@@ -66,16 +66,25 @@ def vote_book(
         if like:
             db.delete(like)
             db.commit()
+            
+    existing_like = db.query(models.Like).filter(
+        models.Like.user_id == user_record.id,
+        models.Like.book_id == book.id
+    ).one_or_none()
+    
+    if existing_like:
+        # Toggle: unlike if already liked
+        db.delete(existing_like)
+        db.commit()
     else:
+        # Create new like
         like = models.Like(user_id=user_record.id, book_id=book.id)
         db.add(like)
-        try:
-            db.commit()
-        except IntegrityError:
-            db.rollback()  
+        db.commit()  
 
     likes = db.query(models.Like).filter(models.Like.book_id == book.id).all()
-    users = [{"username": l.user.username, "name": l.user.Name} for l in likes]  
+    #users = [{"username": l.user.username, "name": l.user.Name} for l in likes]  
+    users = [{"username": l.user.username, "name": l.user.Name} for l in likes if l.user is not None]
 
     return Schemas.BookVoteResponse(
         google_book_id=book.google_book_id,
@@ -102,6 +111,92 @@ def get_book_votes(google_book_id: str = Path(...), db: Session = Depends(get_db
         vote_count=len(likes),
         users=users
     )
+
+
+# @router.post("/vote", response_model=Schemas.BookVoteResponse)
+# def vote_book(
+#     payload: Schemas.BookVoteAction = Body(...),
+#     db: Session = Depends(get_db),
+#     current_user: Schemas.TokenData = Depends(Oauth.getCurrentUser),
+# ):
+    
+#     user_record = db.query(models.Login).filter(
+#         models.Login.username == current_user.username
+#     ).one_or_none()
+    
+#     if not user_record:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND, 
+#             detail="User record not found"
+#         )
+
+#     book = get_or_create_book(
+#         db, 
+#         payload.google_book_id, 
+#         payload.title, 
+#         payload.authors, 
+#         payload.thumbnail
+#     )
+
+#     if payload.action == "unlike":
+#         # Unlike: remove the like
+#         like = db.query(models.Like).filter(
+#             models.Like.user_id == user_record.id, 
+#             models.Like.book_id == book.id
+#         ).one_or_none()
+        
+#         if like:
+#             db.delete(like)
+#             db.commit()
+#         else:
+#             raise HTTPException(
+#                 status_code=status.HTTP_404_NOT_FOUND,
+#                 detail="You haven't liked this book yet"
+#             )
+#     else:
+#         # Like: check if already liked first
+#         existing_like = db.query(models.Like).filter(
+#             models.Like.user_id == user_record.id,
+#             models.Like.book_id == book.id
+#         ).one_or_none()
+        
+#         if existing_like:
+#             # Already liked - return current state or raise error
+#             raise HTTPException(
+#                 status_code=status.HTTP_409_CONFLICT,
+#                 detail="You have already liked this book"
+#             )
+        
+#         # Create new like
+#         like = models.Like(user_id=user_record.id, book_id=book.id)
+#         db.add(like)
+        
+#         try:
+#             db.commit()
+#         except IntegrityError:
+#             db.rollback()
+#             raise HTTPException(
+#                 status_code=status.HTTP_409_CONFLICT,
+#                 detail="You have already liked this book"
+#             )
+
+#     # Get all likes for this book
+#     likes = db.query(models.Like).join(models.Login).filter(
+#         models.Like.book_id == book.id
+#     ).all()
+    
+#     users = [
+#         {"username": l.user.username, "name": l.user.Name} 
+#         for l in likes
+#     ]
+
+#     return Schemas.BookVoteResponse(
+#         google_book_id=book.google_book_id,
+#         title=book.title,
+#         thumbnail=book.thumbnail,
+#         vote_count=len(users),
+#         users=users
+#     )
 
 @router.get("/user/{username}/votes", response_model=list[Schemas.BookVoteResponse])
 def get_user_votes(username: str = Path(...), db: Session = Depends(get_db), current_user: Schemas.TokenData = Depends(Oauth.getCurrentUser)):
